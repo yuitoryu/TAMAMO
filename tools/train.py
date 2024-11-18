@@ -33,7 +33,7 @@ def main():
     sys.path.append(current_working_directory+'/tools/')
     sys.path.append(current_working_directory+'/model/')
     from ChartStats import chartStats
-    from TAMAMO import TokenAlignedMaimaiAnalyzerMOdel
+    from TAMAMo import TokenAlignedMaimaiAnalyzerMOdel
     # Path to the file
     file_path = args.config
 
