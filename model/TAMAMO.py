@@ -15,7 +15,7 @@ class PositionalEncoding(nn.Module):
         x = x + self.pe[:x.size(0)].to(x.device)
         return x
 
-class TokenAlignedMaimaiAnalyzerMOdel(nn.Module):
+class TokenAlignedMaimaiAnalyzerModel(nn.Module):
     def __init__(self, input_dim=18, nhead=2, hidden_dim=128, num_layers=3, hidden_neuron=1, max_len=2200):
         super().__init__()
         self.hn = hidden_neuron
