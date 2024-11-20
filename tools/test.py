@@ -13,6 +13,8 @@ import math
 import importlib.util
 from torch.utils.data import DataLoader, Subset
 from pathlib import Path
+from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 
 def parse_args():
     parser = argparse.ArgumentParser(description='This is a demo for preparing dataset from scratch.')
@@ -20,10 +22,11 @@ def parse_args():
     parser.add_argument('--device', type=str, choices=['cpu', 'cuda'], help='Choose device for computing. CPU will be used if cuda is not available')
     parser.add_argument('--std', help='The standard token jdson file. Please given the root name of the file.')
     parser.add_argument('--checkpoint', help='Input the checkpoint file that end with ".pth".')
+    parser.add_argument('--dist', default=None, help='Plot the distribution of prediction on train and valid data.')
     args = parser.parse_args()
     return args
 
-def benchmark(model, dataset, dataset_original, parameter, device):
+def benchmark(model, dataset, dataset_original, parameter, device, dist):
     model.eval()  # Set model to evaluation mode
     indices = list(range(len(dataset)))
     split = math.floor(len(dataset)*0.8)
@@ -44,7 +47,7 @@ def benchmark(model, dataset, dataset_original, parameter, device):
     false_negative = 0
     num_pos = 0
     num_neg = 0
-    
+
     for i in range(len(dataset)):
         if int(dataset[i][1]) == 1:
             num_pos += 1
@@ -61,7 +64,7 @@ def benchmark(model, dataset, dataset_original, parameter, device):
     
             # Forward pass
             outputs = model(inputs)
-            outputs = outputs.squeeze()
+            outputs = outputs.squeeze(1)
     
             # Apply threshold to get predicted classes
             predicted = (outputs >= 0.5).float()
@@ -74,6 +77,9 @@ def benchmark(model, dataset, dataset_original, parameter, device):
             true_negative += ((predicted == 0) & (targets == 0)).sum().item()
             false_positive += ((predicted == 1) & (targets == 0)).sum().item()
             false_negative += ((predicted == 0) & (targets == 1)).sum().item()
+            
+            targets = targets.cpu()
+            outputs = outputs.cpu()
 
         train_acc = correct / total
 
@@ -87,7 +93,7 @@ def benchmark(model, dataset, dataset_original, parameter, device):
     
             # Forward pass
             outputs = model(inputs)
-            outputs = outputs.squeeze()
+            outputs = outputs.squeeze(1)
     
             # Apply threshold to get predicted classes
             predicted = (outputs >= 0.5).float()
@@ -127,6 +133,34 @@ def benchmark(model, dataset, dataset_original, parameter, device):
             print(f'{key}: {rate[key] * 100:.2f}%')
         else:
             print(f'{key}: {rate[key]}')
+    
+    truth = []
+    pred = []
+    this = dataset_original
+    for i in range(len(this)):
+        input, target = this[i]
+        input = input.unsqueeze(1).to(device)
+        target = float(target)
+        input = input.permute(2,1,0)
+        output = float(model(input).squeeze())
+        pred.append(output)
+        truth.append(this.get_rate(i))
+            
+    if dist != None:
+        plt.figure(figsize=(13, 5))
+        plt.scatter(truth,pred, s=0.5)
+        plt.hlines(y=0.5, xmin=min(truth)-0.1, xmax=max(truth)+0.1, colors='red', linestyles='dashed')
+        plt.vlines(x=13.95, ymin=0, ymax=1, colors='red', linestyles='dashed')
+        plt.gca().xaxis.set_major_locator(MultipleLocator(0.1))
+        plt.xlim(min(truth)-0.1, max(truth)+0.1)
+        plt.ylim(0, 1)
+        plt.xlabel("Rating")
+        plt.ylabel("Probability of being 13 or 13+")
+        plt.title('Probability of all samples (no duplicates)')
+        plt.savefig(os.getcwd() + dist + '/distribution.png')
+        print('Probability graph plotted and saved.')
+            
+            
     return rate
 
 
@@ -141,7 +175,7 @@ def main():
     sys.path.append(current_working_directory+'/tools/')
     sys.path.append(current_working_directory+'/model/')
     from ChartStats import chartStats
-    from TAMAMo import TokenAlignedMaimaiAnalyzerMdel
+    from TAMAMo import TokenAlignedMaimaiAnalyzerModel
     # Path to the file
     file_path = args.config
 
@@ -166,7 +200,7 @@ def main():
     
     
     # Setting up model and training details
-    model = TokenAlignedMaimaiAnalyzerMOdel(nhead = parameter['model_cfg']['nhead'],
+    model = TokenAlignedMaimaiAnalyzerModel(nhead = parameter['model_cfg']['nhead'],
                                             hidden_dim = parameter['model_cfg']['hidden_dim'], 
                                             num_layers = parameter['model_cfg']['num_layers'],
                                             hidden_neuron = parameter['model_cfg']['hidden_neuron'], 
@@ -174,7 +208,7 @@ def main():
     checkpoint = torch.load(args.checkpoint, weights_only=True)
     model.load_state_dict(checkpoint)
     
-    benchmark(model, dataset, dataset_original, parameter, device)
+    benchmark(model, dataset, dataset_original, parameter, device, args.dist)
         
 if __name__ == '__main__':
     main()

@@ -33,7 +33,7 @@ def main():
     sys.path.append(current_working_directory+'/tools/')
     sys.path.append(current_working_directory+'/model/')
     from ChartStats import chartStats
-    from TAMAMo import TokenAlignedMaimaiAnalyzerMdel
+    from TAMAMo import TokenAlignedMaimaiAnalyzerModel
     # Path to the file
     file_path = args.config
 
@@ -57,7 +57,7 @@ def main():
     
     
     # Setting up model and training details
-    model = TokenAlignedMaimaiAnalyzerMOdel(nhead = parameter['model_cfg']['nhead'],
+    model = TokenAlignedMaimaiAnalyzerModel(nhead = parameter['model_cfg']['nhead'],
                                             hidden_dim = parameter['model_cfg']['hidden_dim'], 
                                             num_layers = parameter['model_cfg']['num_layers'],
                                             hidden_neuron = parameter['model_cfg']['hidden_neuron'], 
