@@ -31,7 +31,7 @@ def main():
     rating = bind_rate(rating_file)
     dataset = extract(folder_path, rating)
     processed_data = []
-    print('Start extracting andbinding rating with charts and primarily decompose the charts.')
+    print('Start extracting and binding rating with charts and primarily decompose the charts.')
     for song in dataset:
         for diff in song['difficulty']:
             fullchart = song['difficulty'][diff]
@@ -45,9 +45,9 @@ def main():
     for i in range(len(processed_data)):
         converter = bpmTotimeConverter(processed_data[i])
         tokenizer = noteTokenizer(converter.output())
-        converter = bpmTotimeConverter(processed_data[i])
+        #converter = bpmTotimeConverter(processed_data[i])
         processed_data[i] = converter.output()
-    print()
+    
 
 if __name__ == '__main__':
     main()

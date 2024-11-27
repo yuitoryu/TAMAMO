@@ -36,3 +36,5 @@ class chartStats(Dataset):
             if cur > self[i][1]:
                 cur = self[i][1]
         return cur
+    
+    
