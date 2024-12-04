@@ -5,7 +5,7 @@ parameter = dict(
         num_layers = 3,
         hidden_neuron = 1,
         max_len = 2200,
-         pretrained_from = '/transformer_checkpoint/model_class_bound[14]_data[13,15]_h3_l3_balance_checkpoint.pth'
+        pretrained_from = '/checkpoints/model_class_bound[14]_data[13,15]_h3_l3_balance_checkpoint.pth'
     ),
     
     dataset_cfg = dict(

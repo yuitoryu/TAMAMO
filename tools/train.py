@@ -16,10 +16,11 @@ from pathlib import Path
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, help='Config file of the model.')
-    parser.add_argument('--device', type=str, choices=['cpu', 'cuda'], help='Choose device for computing. CPU will be used if cuda is not available')
+    parser.add_argument('--device', type=str, choices=['cpu', 'cuda'], help='Choose device for computing. CPU will be used if cuda is not available.')
     parser.add_argument('--valid', default=False, help='Do validation while training.')
     parser.add_argument('--lossplot', default=False, help='Plot your loss.')
     parser.add_argument('--save_dir', type=str, help='Directory for saving the model.')
+    parser.add_argument('--dataset', default=None, help='Input this parameter if you don\'t want to use the dataset in dedicated place. Use relative path!')
     args = parser.parse_args()
     return args
 
@@ -50,7 +51,10 @@ def main():
     
     # Setting up dataset
     print('Start loading dataset...')
-    dataset = chartStats( current_working_directory + parameter['dataset_cfg']['path'], parameter['dataset_cfg']['boundary'])
+    if args.dataset == None:
+        dataset = chartStats( current_working_directory + parameter['dataset_cfg']['path'], parameter['dataset_cfg']['boundary'])
+    else:
+        dataset = chartStats( current_working_directory + '/' + args.dataset, parameter['dataset_cfg']['boundary'])
     print(f'Dataset loaded. {len(dataset)} samples in total.')
     
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
